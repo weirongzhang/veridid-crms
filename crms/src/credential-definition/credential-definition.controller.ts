@@ -3,6 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { CurrentUser } from '../auth/current-user.decorator';
 import type { JwtPayload } from '../auth/jwt-auth.guard';
 import { CredentialDefinitionService } from './credential-definition.service';
+import { CreateCredentialDefinitionDto } from './credential-definition.dto';
 
 @ApiTags('Credential Definitions')
 @ApiBearerAuth()
@@ -37,7 +38,7 @@ export class CredentialDefinitionController {
   @ApiOperation({ summary: 'Register a new AnonCreds credential definition on the ledger' })
   async register(
     @CurrentUser() user: JwtPayload,
-    @Body() body: { schemaId: string; tag: string; supportRevocation?: boolean },
+    @Body() body: CreateCredentialDefinitionDto,
   ) {
     this.logger.log(`POST /credential-definitions - tenant: ${user.tenantId}, schema: ${body.schemaId}, tag: ${body.tag}`);
     const result = await this.credDefService.register(

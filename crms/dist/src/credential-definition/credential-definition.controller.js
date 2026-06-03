@@ -18,6 +18,7 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const current_user_decorator_1 = require("../auth/current-user.decorator");
 const credential_definition_service_1 = require("./credential-definition.service");
+const credential_definition_dto_1 = require("./credential-definition.dto");
 let CredentialDefinitionController = CredentialDefinitionController_1 = class CredentialDefinitionController {
     credDefService;
     logger = new common_1.Logger(CredentialDefinitionController_1.name);
@@ -74,7 +75,7 @@ __decorate([
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [Object, credential_definition_dto_1.CreateCredentialDefinitionDto]),
     __metadata("design:returntype", Promise)
 ], CredentialDefinitionController.prototype, "register", null);
 exports.CredentialDefinitionController = CredentialDefinitionController = CredentialDefinitionController_1 = __decorate([
