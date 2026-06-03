@@ -6,10 +6,15 @@ import {
   NotFoundException,
   Param,
   Post,
+  Query,
+  Res,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import type { Response } from 'express';
+import * as QRCode from 'qrcode';
 import { CurrentUser } from '../auth/current-user.decorator';
 import type { JwtPayload } from '../auth/jwt-auth.guard';
+import { Public } from '../auth/public.decorator';
 import { ConnectionService } from './connection.service';
 
 @ApiTags('Connections')
@@ -26,6 +31,23 @@ export class ConnectionController {
     this.logger.log(`GET /connections - tenant: ${user.tenantId}`);
     const result = await this.connectionService.getAll(user.tenantId);
     return { success: true, ...result };
+  }
+
+  @Get('invitation/qr')
+  @Public()
+  @ApiOperation({
+    summary: 'Render an invitation URL as a QR code PNG image',
+    description: 'Pass the full invitation URL from POST /connections/invitation. Open this endpoint in a browser or img tag to display the QR code for a mobile wallet to scan.',
+  })
+  @ApiQuery({ name: 'url', required: true, description: 'The full OOB invitation URL' })
+  async invitationQr(
+    @Query('url') url: string,
+    @Res() res: Response,
+  ) {
+    this.logger.log(`GET /connections/invitation/qr`);
+    const png = await QRCode.toBuffer(url, { width: 400, margin: 2 });
+    res.setHeader('Content-Type', 'image/png');
+    res.end(png);
   }
 
   @Get('messages/:connectionId')
@@ -70,7 +92,8 @@ export class ConnectionController {
   async createInvitation(@CurrentUser() user: JwtPayload, @Body() body: { label?: string }) {
     this.logger.log(`POST /connections/invitation - tenant: ${user.tenantId}`);
     const invitation = await this.connectionService.createInvitation(user.tenantId, body?.label);
-    return { success: true, invitation };
+    const qrUrl = `http://localhost:3000/connections/invitation/qr?url=${encodeURIComponent(invitation.url)}`;
+    return { success: true, invitation, qrCodeUrl: qrUrl };
   }
 
   @Post('receive-invitation')

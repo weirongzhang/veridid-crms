@@ -1,3 +1,4 @@
+import type { Response } from 'express';
 import type { JwtPayload } from '../auth/jwt-auth.guard';
 import { ConnectionService } from './connection.service';
 export declare class ConnectionController {
@@ -9,6 +10,7 @@ export declare class ConnectionController {
         connections: any;
         success: boolean;
     }>;
+    invitationQr(url: string, res: Response): Promise<void>;
     getMessages(user: JwtPayload, connectionId: string): Promise<{
         success: boolean;
         messages: any;
@@ -35,6 +37,7 @@ export declare class ConnectionController {
             url: any;
             outOfBandInvitation: any;
         };
+        qrCodeUrl: string;
     }>;
     receiveInvitation(user: JwtPayload, body: {
         invitationUrl: string;

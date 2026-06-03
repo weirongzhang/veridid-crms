@@ -1,10 +1,43 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
@@ -16,7 +49,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConnectionController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
+const QRCode = __importStar(require("qrcode"));
 const current_user_decorator_1 = require("../auth/current-user.decorator");
+const public_decorator_1 = require("../auth/public.decorator");
 const connection_service_1 = require("./connection.service");
 let ConnectionController = ConnectionController_1 = class ConnectionController {
     connectionService;
@@ -28,6 +63,12 @@ let ConnectionController = ConnectionController_1 = class ConnectionController {
         this.logger.log(`GET /connections - tenant: ${user.tenantId}`);
         const result = await this.connectionService.getAll(user.tenantId);
         return { success: true, ...result };
+    }
+    async invitationQr(url, res) {
+        this.logger.log(`GET /connections/invitation/qr`);
+        const png = await QRCode.toBuffer(url, { width: 400, margin: 2 });
+        res.setHeader('Content-Type', 'image/png');
+        res.end(png);
     }
     async getMessages(user, connectionId) {
         this.logger.log(`GET /connections/messages/${connectionId} - tenant: ${user.tenantId}`);
@@ -57,7 +98,8 @@ let ConnectionController = ConnectionController_1 = class ConnectionController {
     async createInvitation(user, body) {
         this.logger.log(`POST /connections/invitation - tenant: ${user.tenantId}`);
         const invitation = await this.connectionService.createInvitation(user.tenantId, body?.label);
-        return { success: true, invitation };
+        const qrUrl = `http://localhost:3000/connections/invitation/qr?url=${encodeURIComponent(invitation.url)}`;
+        return { success: true, invitation, qrCodeUrl: qrUrl };
     }
     async receiveInvitation(user, body) {
         this.logger.log(`POST /connections/receive-invitation - tenant: ${user.tenantId}`);
@@ -91,6 +133,20 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], ConnectionController.prototype, "getAll", null);
+__decorate([
+    (0, common_1.Get)('invitation/qr'),
+    (0, public_decorator_1.Public)(),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Render an invitation URL as a QR code PNG image',
+        description: 'Pass the full invitation URL from POST /connections/invitation. Open this endpoint in a browser or img tag to display the QR code for a mobile wallet to scan.',
+    }),
+    (0, swagger_1.ApiQuery)({ name: 'url', required: true, description: 'The full OOB invitation URL' }),
+    __param(0, (0, common_1.Query)('url')),
+    __param(1, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], ConnectionController.prototype, "invitationQr", null);
 __decorate([
     (0, common_1.Get)('messages/:connectionId'),
     (0, swagger_1.ApiOperation)({ summary: 'Get basic messages for a connection' }),
