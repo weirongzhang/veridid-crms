@@ -32,6 +32,9 @@ export class User {
   isActive: boolean = true;
 
   @Property({ nullable: true })
+  tenantId?: string;
+
+  @Property({ nullable: true })
   lastLoginAt?: Date;
 
   @Property()

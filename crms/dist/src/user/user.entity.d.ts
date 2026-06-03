@@ -10,6 +10,7 @@ export declare class User {
     lastName?: string;
     role: UserRole;
     isActive: boolean;
+    tenantId?: string;
     lastLoginAt?: Date;
     createdAt: Date;
     updatedAt: Date;

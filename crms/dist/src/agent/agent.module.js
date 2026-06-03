@@ -17,6 +17,7 @@ exports.AgentModule = AgentModule = __decorate([
     (0, common_1.Module)({
         controllers: [agent_controller_1.AgentController],
         providers: [agent_service_1.AgentService],
+        exports: [agent_service_1.AgentService],
     })
 ], AgentModule);
 //# sourceMappingURL=agent.module.js.map

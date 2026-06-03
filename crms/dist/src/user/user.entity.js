@@ -24,6 +24,7 @@ let User = class User {
     lastName;
     role = UserRole.User;
     isActive = true;
+    tenantId;
     lastLoginAt;
     createdAt = new Date();
     updatedAt = new Date();
@@ -57,6 +58,10 @@ __decorate([
     (0, core_1.Property)(),
     __metadata("design:type", Boolean)
 ], User.prototype, "isActive", void 0);
+__decorate([
+    (0, core_1.Property)({ nullable: true }),
+    __metadata("design:type", String)
+], User.prototype, "tenantId", void 0);
 __decorate([
     (0, core_1.Property)({ nullable: true }),
     __metadata("design:type", Date)

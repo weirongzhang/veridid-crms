@@ -8,20 +8,30 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
+const core_1 = require("@nestjs/core");
 const config_1 = require("@nestjs/config");
 const nestjs_1 = require("@mikro-orm/nestjs");
+const migrations_1 = require("@mikro-orm/migrations");
 const postgresql_1 = require("@mikro-orm/postgresql");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 const user_module_1 = require("./user/user.module");
 const agent_module_1 = require("./agent/agent.module");
+const connection_module_1 = require("./connection/connection.module");
+const credential_module_1 = require("./credential/credential.module");
+const proof_module_1 = require("./proof/proof.module");
+const schema_module_1 = require("./schema/schema.module");
+const credential_definition_module_1 = require("./credential-definition/credential-definition.module");
+const did_module_1 = require("./did/did.module");
+const auth_module_1 = require("./auth/auth.module");
+const jwt_auth_guard_1 = require("./auth/jwt-auth.guard");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            config_1.ConfigModule.forRoot({ isGlobal: true, envFilePath: '../.env' }),
+            config_1.ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
             nestjs_1.MikroOrmModule.forRootAsync({
                 inject: [config_1.ConfigService],
                 useFactory: (config) => ({
@@ -34,13 +44,28 @@ exports.AppModule = AppModule = __decorate([
                     user: config.get('POSTGRES_USER', 'postgres'),
                     password: config.get('POSTGRES_PASSWORD', 'postgres'),
                     autoLoadEntities: true,
+                    extensions: [migrations_1.Migrator],
+                    migrations: {
+                        path: 'dist/migrations',
+                        pathTs: 'src/migrations',
+                    },
                 }),
             }),
             user_module_1.UserModule,
             agent_module_1.AgentModule,
+            connection_module_1.ConnectionModule,
+            credential_module_1.CredentialModule,
+            proof_module_1.ProofModule,
+            schema_module_1.SchemaModule,
+            credential_definition_module_1.CredentialDefinitionModule,
+            did_module_1.DidModule,
+            auth_module_1.AuthModule,
         ],
         controllers: [app_controller_1.AppController],
-        providers: [app_service_1.AppService],
+        providers: [
+            app_service_1.AppService,
+            { provide: core_1.APP_GUARD, useClass: jwt_auth_guard_1.JwtAuthGuard },
+        ],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map
